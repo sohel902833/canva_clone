@@ -1,5 +1,6 @@
 import "./assets/index.css";
 // import utils from "./utils";
+import { resolveCollision } from "./utils";
 
 const canvas = document.getElementById("canvas");
 const startBtn = document.getElementById("start");
@@ -37,23 +38,57 @@ function getDistance(x1, y1, x2, y2) {
 }
 // Objects
 class Circle {
-    constructor(x, y, dy, radius, color) {
+    constructor(x, y, dx, dy, radius, color) {
         this.x = x;
         this.y = y;
         this.dy = dy;
+        this.dx = dx;
         this.radius = radius;
         this.color = color;
+        this.mass = 1;
+        this.velocity = {
+            x: Math.random() - 0.5,
+            y: Math.random() - 0.5,
+        };
     }
 
     draw() {
         c.beginPath();
         c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        c.fillStyle = this.color;
-        c.fill();
+        c.strokeStyle = this.color;
+        c.stroke();
         c.closePath();
     }
 
-    update() {
+    update(particles) {
+        for (let i = 0; i < particles.length; i++) {
+            const particle = particles[i];
+            if (this === particle) {
+                continue;
+            }
+            const distance = getDistance(
+                this.x,
+                this.y,
+                particle.x,
+                particle.y
+            );
+            const isColliding = distance - this.radius * 2 < 0;
+
+            if (isColliding) {
+                resolveCollision(this, particle);
+            }
+        }
+
+        if (this.x - this.radius <= 0 || this.x + this.radius >= innerWidth) {
+            this.velocity.x = -this.velocity.x;
+        }
+        if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
+            this.velocity.y = -this.velocity.y;
+        }
+
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+
         this.draw();
     }
 }
@@ -67,18 +102,31 @@ const getCircles = (len = 1) => {
     const arr = [];
     for (let i = 0; i < len; i++) {
         const color = colors[getRandomInt(0, colors.length)];
-        const radius = getRandomInt(25, 40);
+        const radius = getRandomInt(50, 100);
         const dy = getRandomInt(2, 20);
-        const x = getRandomInt(150, canvas.width - 150);
-        const y = getRandomInt(150, canvas.height - 150);
-        arr.push(new Circle(x, y, dy, radius, color));
+        const dx = getRandomInt(2, 20);
+        let x = getRandomInt(radius, innerWidth - radius);
+        let y = getRandomInt(radius, innerHeight - radius);
+        // console.log("Hello", arr);
+        if (i !== 0) {
+            //i=2
+            for (let j = 0; j < arr.length; j++) {
+                const distance = getDistance(x, y, arr[j].x, arr[j].y);
+                if (distance - radius * 2 < 0) {
+                    x = getRandomInt(radius, innerWidth - radius);
+                    y = getRandomInt(radius, innerHeight - radius);
+                    j = -1;
+                }
+            }
+        }
+        arr.push(new Circle(x, y, dx, dy, radius, color));
     }
     return arr;
 };
 let circleArray = [];
 
 function init() {
-    circleArray = getCircles(2);
+    circleArray = getCircles(4);
 }
 let isRunning = true;
 // Animation Loop
@@ -87,23 +135,7 @@ function animate() {
         requestAnimationFrame(animate);
     }
     c.clearRect(0, 0, canvas.width, canvas.height);
-    const [circle1, circle2] = circleArray;
-    circle1.update();
-    circle2.x = mouse.x;
-    circle2.y = mouse.y;
-    circle2.update();
-
-    const distance = getDistance(circle1.x, circle1.y, circle2.x, circle2.y);
-
-    if (distance < circle1.radius + circle2.radius) {
-        circle1.color = "red";
-    } else {
-        circle1.color = "black";
-    }
-    // circleArray.forEach((circle) => circle.update());
-    // objects.forEach(object => {
-    //  object.update()
-    // })
+    circleArray.forEach((circle) => circle.update(circleArray));
 }
 
 init();
