@@ -1,5 +1,34 @@
 import "./assets/index.css";
 
+const MAX_RADIUS = 40;
+const colors = [
+    "#FF6B6B", // Soft Red
+    "#F7B801", // Warm Yellow
+    "#6A0572", // Deep Purple
+    "#4ECDC4", // Teal Blue
+    "#1A535C", // Dark Cyan
+    "#FF9F1C", // Bright Orange
+    "#2EC4B6", // Aqua Green
+    "#FF577F", // Coral Pink
+    "#8D6E63", // Earthy Brown
+    "#3D348B", // Royal Blue
+    "#D81159", // Crimson Red
+    "#218380", // Deep Teal
+    "#FFBF69", // Soft Peach
+    "#4A90E2", // Cool Blue
+    "#2E294E", // Midnight Purple
+    "#FF5A5F", // Watermelon
+    "#4CAF50", // Fresh Green
+    "#FF8552", // Soft Orange
+    "#B388EB", // Lavender Purple
+    "#E63946", // Strong Red
+];
+function getRandomIndex() {
+    return Math.floor(Math.random() * colors.length);
+}
+function getRandomRadius() {
+    return Math.random() * (20 - 3) + 3;
+}
 function main() {
     const canvasHeight = 600;
     const canvasWidth = 600;
@@ -10,58 +39,53 @@ function main() {
 
     const context = canvas.getContext("2d");
 
-    //rectangle
-    // for (let i = 50; i <= 400; i += 110) {
-    //     //x , y, height, width
-    //     context.fillStyle = "green";
-    //     context.fillRect(i, i, 100, 100);
-    // }
+    const isInsideCanvas = (clientX, clientY) => {
+        const canvasPos = canvas.getBoundingClientRect();
+        if (
+            canvasPos.left <= clientX &&
+            canvasPos.right >= clientX &&
+            canvasPos.top <= clientY &&
+            canvasPos.bottom >= clientY
+        ) {
+            return true;
+        }
+        return false;
+    };
 
-    //line
-    // context.beginPath();
-    // //x and y coordinates
-    // context.moveTo(200, 100);
-    // context.lineTo(500, 100);
-    // context.lineTo(500, 400);
-    // context.lineTo(200, 100);
-    // context.strokeStyle = "blue";
-    // context.stroke();
+    const mouse = {
+        x: undefined,
+        y: undefined,
+        clientX: 0,
+        clientY: 0,
+    };
 
-    //arc /circle
-    // context.beginPath();
-    // context.strokeStyle = "black";
-    // context.arc(200, 300, 70, 0, Math.PI * 0.6, false);
-    // context.stroke();
-    // //second one
-    // context.beginPath();
-    // context.strokeStyle = "red";
-    // context.arc(200, 300, 70, Math.PI * 0.6, Math.PI * 0.9, false);
-    // context.stroke();
-    // //second one
-    // context.beginPath();
-    // context.strokeStyle = "blue";
-    // context.arc(200, 300, 70, Math.PI * 0.9, Math.PI * 1.2, false);
-    // context.stroke();
-    // //third one
-    // context.beginPath();
-    // context.strokeStyle = "blue";
-    // context.arc(200, 300, 70, Math.PI * 1.2, Math.PI * 2, false);
-    // context.stroke();
+    window.addEventListener("mousemove", (e) => {
+        if (isInsideCanvas(e.clientX, e.clientY)) {
+            mouse.x = e.x;
+            mouse.y = e.y;
+            mouse.clientX = e.clientX;
+            mouse.clientY = e.clientY;
+        } else {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        }
+    });
 
-    //animating circle
-    //third one
     function Circle(x, y, dx, dy, radius = 30) {
         this.x = x;
         this.y = y;
         this.dx = dx;
         this.dy = dy;
         this.radius = radius;
+        this.MIN_RADIUS = radius;
+        this.color = colors[getRandomIndex()];
 
         this.draw = function () {
             context.beginPath();
             context.strokeStyle = "blue";
             context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-            context.stroke();
+            context.fillStyle = this.color;
+            context.fill();
         };
         this.update = function () {
             if (
@@ -78,6 +102,17 @@ function main() {
             }
             this.x += this.dx;
             this.y += this.dy;
+            if (
+                mouse.x - this.x < 50 &&
+                mouse.x - this.x > -50 &&
+                mouse.y - this.y < 50 &&
+                mouse.y - this.y > -50 &&
+                this.radius < MAX_RADIUS
+            ) {
+                this.radius += 1;
+            } else if (this.radius > this.MIN_RADIUS) {
+                this.radius -= 1;
+            }
             this.draw();
         };
     }
@@ -87,9 +122,9 @@ function main() {
         for (let i = 0; i <= len; i++) {
             const randomX = Math.random() * canvasWidth;
             const randomY = Math.random() * canvasHeight;
-            const dx = (Math.random() - 0.5) * 10;
-            const dy = (Math.random() - 0.5) * 10;
-            const radius = 10;
+            const dx = Math.random() - 0.5;
+            const dy = Math.random() - 0.5;
+            const radius = getRandomRadius();
             circleList.push(new Circle(randomX, randomY, dx, dy, radius));
         }
         return circleList;
