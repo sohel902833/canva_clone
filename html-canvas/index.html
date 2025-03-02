@@ -7,22 +7,19 @@
         <title>Vite App</title>
     </head>
     <body class="bg-gray-300">
-        <div id="app" class="flex items-center justify-center h-screen">
-            <canvas
-                id="canvas"
-                class="border border-slate-400 rounded-3xl bg-white"
-            ></canvas>
+        <div id="app">
+            <canvas id="canvas"></canvas>
 
-            <div class="fixed right-0 bottom-0 flex items-center gap-2">
+            <div class="fixed right-[10px] bottom-[10px] flex gap-2">
                 <button
-                    id="start_button"
-                    class="bg-amber-700 text-white px-2 py-1 rounded-sm cursor-pointer"
+                    id="start"
+                    class="bg-purple-500 text-white px-4 py-2 rounded-sm text-sm cursor-pointer"
                 >
                     Start
                 </button>
                 <button
-                    id="stop_button"
-                    class="bg-red-700 text-white px-2 py-1 rounded-sm cursor-pointer"
+                    id="stop"
+                    class="bg-red-500 text-white px-4 py-2 rounded-sm text-sm cursor-pointer"
                 >
                     Stop
                 </button>

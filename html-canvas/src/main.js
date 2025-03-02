@@ -1,93 +1,116 @@
 import "./assets/index.css";
+// import utils from "./utils";
 
-function main() {
-    const canvasHeight = 600;
-    const canvasWidth = 600;
-    const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("canvas");
+const startBtn = document.getElementById("start");
+const stopBtn = document.getElementById("stop");
+const c = canvas.getContext("2d");
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
-    const context = canvas.getContext("2d");
+const mouse = {
+    x: innerWidth / 2,
+    y: innerHeight / 2,
+};
 
-    function Circle(x, y, dx, dy, radius = 30) {
+const colors = ["#2185C5", "#7ECEFD", "#FFF6E5", "#FF7F66"];
+const GRAVITY = 1;
+const FRICTION = 0.9;
+// Event Listeners
+addEventListener("mousemove", (event) => {
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
+});
+
+addEventListener("resize", () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    init();
+});
+
+// Objects
+class Ball {
+    constructor(x, y, dy, radius, color) {
         this.x = x;
         this.y = y;
-        this.dx = dx;
         this.dy = dy;
         this.radius = radius;
-
-        this.draw = function () {
-            context.beginPath();
-            context.strokeStyle = "blue";
-            context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-            context.stroke();
-        };
-        this.update = function () {
-            if (
-                this.x + this.radius > canvasWidth ||
-                this.x - this.radius < 0
-            ) {
-                this.dx = -this.dx;
-            }
-            if (
-                this.y + this.radius > canvasHeight ||
-                this.y - this.radius < 0
-            ) {
-                this.dy = -this.dy;
-            }
-            this.x += this.dx;
-            this.y += this.dy;
-            this.draw();
-        };
+        this.color = color;
     }
 
-    const getCircles = (len = 1) => {
-        const circleList = [];
-        for (let i = 0; i <= len; i++) {
-            const randomX = Math.random() * canvasWidth;
-            const randomY = Math.random() * canvasHeight;
-            const dx = (Math.random() - 0.5) * 10;
-            const dy = (Math.random() - 0.5) * 10;
-            const radius = 10;
-            circleList.push(new Circle(randomX, randomY, dx, dy, radius));
+    draw() {
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        c.fillStyle = this.color;
+        c.fill();
+        c.closePath();
+    }
+
+    update() {
+        if (this.y + this.radius > canvas.height) {
+            this.dy = -this.dy * FRICTION;
+        } else {
+            // console.log("Dy", this.dy, this.y);
+            this.dy += GRAVITY;
         }
-        return circleList;
-    };
-
-    let isRunning = true;
-
-    const drawCircles = () => {
-        const circles = getCircles(1000);
-
-        function animate() {
-            if (isRunning) {
-                requestAnimationFrame(animate);
-            }
-            context.clearRect(0, 0, innerWidth, innerHeight);
-            circles.forEach((circle) => circle.update());
-        }
-        animate();
-    };
-
-    drawCircles();
-
-    const startButton = document.getElementById("start_button");
-    const stopButton = document.getElementById("stop_button");
-
-    startButton.addEventListener("click", () => {
-        if (isRunning) {
-            return;
-        }
-        isRunning = true;
-        animate();
-    });
-    stopButton.addEventListener("click", () => {
-        if (!isRunning) {
-            return;
-        }
-        isRunning = false;
-    });
+        this.y += this.dy;
+        this.draw();
+    }
 }
 
-main();
+// Implementation
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+const getBalls = (len = 1) => {
+    const arr = [];
+    for (let i = 0; i <= len; i++) {
+        const color = colors[getRandomInt(0, colors.length)];
+        const radius = getRandomInt(2, 40);
+        const dy = getRandomInt(2, 20);
+        const x = getRandomInt(150, canvas.width - 150);
+        const y = getRandomInt(150, canvas.height - 150);
+        arr.push(new Ball(x, y, dy, radius, color));
+    }
+    return arr;
+};
+let ballArray = [];
+
+function init() {
+    ballArray = getBalls(500);
+}
+let isRunning = true;
+// Animation Loop
+function animate() {
+    if (isRunning) {
+        requestAnimationFrame(animate);
+    }
+    c.clearRect(0, 0, canvas.width, canvas.height);
+
+    c.fillText("HTML CANVAS BOILERPLATE", mouse.x, mouse.y);
+    ballArray.forEach((ball) => ball.update());
+    // objects.forEach(object => {
+    //  object.update()
+    // })
+}
+
+init();
+animate();
+
+startBtn.addEventListener("click", () => {
+    if (isRunning) {
+        return;
+    }
+    isRunning = true;
+    animate();
+});
+
+stopBtn.addEventListener("click", () => {
+    if (!isRunning) {
+        return;
+    }
+    isRunning = false;
+});
