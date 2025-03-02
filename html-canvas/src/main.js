@@ -10,8 +10,8 @@ canvas.width = innerWidth;
 canvas.height = innerHeight;
 
 const mouse = {
-    x: innerWidth / 2,
-    y: innerHeight / 2,
+    x: 10,
+    y: 10,
 };
 
 const colors = ["#2185C5", "#7ECEFD", "#FFF6E5", "#FF7F66"];
@@ -29,9 +29,14 @@ addEventListener("resize", () => {
 
     init();
 });
+function getDistance(x1, y1, x2, y2) {
+    let xDistance = x2 - x1;
+    let yDistance = y2 - y1;
 
+    return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+}
 // Objects
-class Ball {
+class Circle {
     constructor(x, y, dy, radius, color) {
         this.x = x;
         this.y = y;
@@ -49,13 +54,6 @@ class Ball {
     }
 
     update() {
-        if (this.y + this.radius > canvas.height) {
-            this.dy = -this.dy * FRICTION;
-        } else {
-            // console.log("Dy", this.dy, this.y);
-            this.dy += GRAVITY;
-        }
-        this.y += this.dy;
         this.draw();
     }
 }
@@ -65,22 +63,22 @@ class Ball {
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-const getBalls = (len = 1) => {
+const getCircles = (len = 1) => {
     const arr = [];
-    for (let i = 0; i <= len; i++) {
+    for (let i = 0; i < len; i++) {
         const color = colors[getRandomInt(0, colors.length)];
-        const radius = getRandomInt(2, 40);
+        const radius = getRandomInt(25, 40);
         const dy = getRandomInt(2, 20);
         const x = getRandomInt(150, canvas.width - 150);
         const y = getRandomInt(150, canvas.height - 150);
-        arr.push(new Ball(x, y, dy, radius, color));
+        arr.push(new Circle(x, y, dy, radius, color));
     }
     return arr;
 };
-let ballArray = [];
+let circleArray = [];
 
 function init() {
-    ballArray = getBalls(500);
+    circleArray = getCircles(2);
 }
 let isRunning = true;
 // Animation Loop
@@ -89,9 +87,20 @@ function animate() {
         requestAnimationFrame(animate);
     }
     c.clearRect(0, 0, canvas.width, canvas.height);
+    const [circle1, circle2] = circleArray;
+    circle1.update();
+    circle2.x = mouse.x;
+    circle2.y = mouse.y;
+    circle2.update();
 
-    c.fillText("HTML CANVAS BOILERPLATE", mouse.x, mouse.y);
-    ballArray.forEach((ball) => ball.update());
+    const distance = getDistance(circle1.x, circle1.y, circle2.x, circle2.y);
+
+    if (distance < circle1.radius + circle2.radius) {
+        circle1.color = "red";
+    } else {
+        circle1.color = "black";
+    }
+    // circleArray.forEach((circle) => circle.update());
     // objects.forEach(object => {
     //  object.update()
     // })
