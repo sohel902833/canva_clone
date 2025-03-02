@@ -50,30 +50,60 @@ function main() {
 
     //animating circle
     //third one
-    let x = Math.random() * canvasWidth;
-    let y = Math.random() * canvasHeight;
+    function Circle(x, y, dx, dy, radius = 30) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.radius = radius;
 
-    let dx = (Math.random() - 0.5) * 10;
-    let dy = (Math.random() - 0.5) * 10;
-    const radius = 30;
+        this.draw = function () {
+            context.beginPath();
+            context.strokeStyle = "blue";
+            context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            context.stroke();
+        };
+        this.update = function () {
+            if (
+                this.x + this.radius > canvasWidth ||
+                this.x - this.radius < 0
+            ) {
+                this.dx = -this.dx;
+            }
+            if (
+                this.y + this.radius > canvasHeight ||
+                this.y - this.radius < 0
+            ) {
+                this.dy = -this.dy;
+            }
+            this.x += this.dx;
+            this.y += this.dy;
+            this.draw();
+        };
+    }
+
+    const getCircles = (len = 1) => {
+        const circleList = [];
+        for (let i = 0; i <= len; i++) {
+            const randomX = Math.random() * canvasWidth;
+            const randomY = Math.random() * canvasHeight;
+            const dx = (Math.random() - 0.5) * 10;
+            const dy = (Math.random() - 0.5) * 10;
+            const radius = 10;
+            circleList.push(new Circle(randomX, randomY, dx, dy, radius));
+        }
+        return circleList;
+    };
+
+    const circles = getCircles(1000);
+
     let isRunning = true;
     function animate() {
         if (isRunning) {
             requestAnimationFrame(animate);
         }
         context.clearRect(0, 0, innerWidth, innerHeight);
-        context.beginPath();
-        context.strokeStyle = "blue";
-        context.arc(x, y, radius, 0, Math.PI * 2, false);
-        context.stroke();
-        if (x + radius > canvasWidth || x - radius < 0) {
-            dx = -dx;
-        }
-        if (y + radius > canvasHeight || y - radius < 0) {
-            dy = -dy;
-        }
-        x += dx;
-        y += dy;
+        circles.forEach((circle) => circle.update());
     }
     animate();
 
